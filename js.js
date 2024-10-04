@@ -36,14 +36,6 @@ Vue.createApp({})
                 returnedInputValue: ""
             };
         },
-        computed: {
-            inputValidity() {
-                return this.myInputs.map(input => ({
-                    ...input,
-                    isValid: this.validateInput(input)
-                }));
-            }
-        },
         methods: {
             validateInput(input) {
                 if (input.name === "must be>3<10") {
@@ -68,9 +60,7 @@ Vue.createApp({})
             handleSubmit() {
                 this.submitted = true;
 
-                const validity = this.inputValidity;
-
-                if (validity.every(input => input.isValid)) {
+                if (this.myInputs.every(input => this.validateInput(input))) {
                     alert("Form submitted successfully!");
                     this.myInputs.forEach(i => i.value = "");
                     this.submitted = false; // Reset submission state
@@ -78,29 +68,17 @@ Vue.createApp({})
                     alert("Please fix the errors in the form.");
                 }
             },
-            // временно заглушил
-            getState(input, index) {
-                if (!this.inputValidity[index].isValid && this.submitted) {
-                    return 'is-valid';
-                }
-
-                if (this.inputValidity[index].isValid && this.submitted) {
-                    return 'is-invalid';
-                }
-
-                return "";
-            }
         },
         template: `
           <form @submit.prevent="handleSubmit" class="needs-validation" novalidate>
-            <div v-for="(input, index) in myInputs" :key="input.id">
+            <div v-for="(input) in myInputs" :key="input.id">
               <label :for="input.name">{{ input.name }}</label>
               <my-input
                   type="text"
                   :value="input.value"
                   @update:value="input.value = $event"
                   :id="input.name"
-                  :class="{'is-invalid': !inputValidity[index].isValid && submitted, 'is-valid': inputValidity[index].isValid && submitted}"
+                  :class="{'is-invalid': !validateInput(input) && submitted, 'is-valid': validateInput(input) && submitted}"
                   class="form-control"
                   required
               />
@@ -114,17 +92,7 @@ Vue.createApp({})
         `
     })
     .component("myInput", {
-        // пустил темп для прверки
-
         props: {
-            // messageState: {
-            //   type: String,
-            //   required: true
-            // },
-            // temp: {
-            //     type: Object,
-            //     required: true
-            // },
             value: {
                 type: String,
                 default: ""
@@ -137,10 +105,7 @@ Vue.createApp({})
         template:
             `<input
                 :value="value"
-                @input="(event) => {
-                    // в тут проверял стейты, поэтому эмит такой
-                    // console.log(this.messageState);
-                    $emit('update:value', event.target.value)}"
+                @input="($emit('update:value', $event.target.value)"
             />
             `
     })
