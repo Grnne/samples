@@ -37,6 +37,13 @@ Vue.createApp({})
             };
         },
         methods: {
+            getInputClass(input) {
+                if (this.submitted) {
+                    return this.validateInput(input) ? 'is-valid' : 'is-invalid';
+                }
+
+                return "";
+            },
             validateInput(input) {
                 if (input.name === "must be>3<10") {
                     return this.validateCustom(input);
@@ -44,9 +51,6 @@ Vue.createApp({})
                 return input.value.trim() !== "";
             },
             validateCustom(input) {
-                // Тут должна быть логика поиска и проверки номера телефона уже добавленного
-                // из коллекции contactsList контактов, которую помоему надо в глобал стейт пихать через пинью
-                // ну а в нашем случае опять эмиты из листа в фонбук и бинд в пропсы
                 if (input.value.length < 4) {
                     input.invalidMessage = "Must be longer than 3 characters.";
                     return false;
@@ -78,11 +82,10 @@ Vue.createApp({})
                   :value="input.value"
                   @update:value="input.value = $event"
                   :id="input.name"
-                  :class="{'is-invalid': !validateInput(input) && submitted, 'is-valid': validateInput(input) && submitted}"
+                  :class="getInputClass(input)"
                   class="form-control"
                   required
               />
-              <!--Выше я не совсем понял как именно оно подало нужный инпут через индекс, но работает -->
               <div class="valid-feedback">{{ input.validMessage }}</div>
               <div class="invalid-feedback">{{ input.invalidMessage }}</div>
             </div>
@@ -99,13 +102,10 @@ Vue.createApp({})
             }
         },
 
-        emits: [
-            "update:value",
-        ],
         template:
             `<input
                 :value="value"
-                @input="($emit('update:value', $event.target.value)"
+                @input="$emit('update:value', $event.target.value)"
             />
             `
     })
